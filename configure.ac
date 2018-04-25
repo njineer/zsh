@@ -415,13 +415,13 @@ ifdef([max_function_depth],[undefine([max_function_depth])])dnl
 AH_TEMPLATE([MAX_FUNCTION_DEPTH],
 [Define for function depth limits])
 AC_ARG_ENABLE(max-function-depth,
-AC_HELP_STRING([--enable-max-function-depth=MAX], [limit function depth to MAX, default 1000]),
+AC_HELP_STRING([--enable-max-function-depth=MAX], [limit function depth to MAX, default 500]),
 [if test x$enableval = xyes; then
-  AC_DEFINE(MAX_FUNCTION_DEPTH, 1000)
+  AC_DEFINE(MAX_FUNCTION_DEPTH, 500)
 elif test x$enableval != xno; then
   AC_DEFINE_UNQUOTED(MAX_FUNCTION_DEPTH, $enableval)
 fi],
-[AC_DEFINE(MAX_FUNCTION_DEPTH, 1000)]
+[AC_DEFINE(MAX_FUNCTION_DEPTH, 500)]
 )
 
 ifdef([default_readnullcmd],[undefine([default_readnullcmd])])dnl
@@ -1540,22 +1540,25 @@ if test -z "$sigfile_list"; then
 /usr/include/bits/signum.h
 /dev/null"
 fi
-for SIGNAL_H in $sigfile_list
+for SIGNAL_TRY_H in $sigfile_list
 do
   dnl Try to make sure it doesn't get confused by files that don't
   dnl have real signal definitions in, but do #define SIG* by counting
   dnl the number of signals.  Maybe we could even check for e.g. SIGHUP?
-  nsigs=`test -f $SIGNAL_H && \
-  grep '#[ 	]*define[ 	][ 	]*SIG[0-9A-Z]*[ 	]*[0-9][0-9]*' $SIGNAL_H | \
+  nsigs=`test -f $SIGNAL_TRY_H && \
+  grep '#[ 	]*define[ 	][ 	]*SIG[0-9A-Z]*[ 	]*[0-9][0-9]*' $SIGNAL_TRY_H | \
   wc -l | sed 's/[ 	]//g'`
-  test "x$nsigs" != x && test "$nsigs" -ge 7 && break
+  if test "x$nsigs" != x && test "$nsigs" -ge 7
+  then
+    SIGNAL_H="$SIGNAL_H $SIGNAL_TRY_H"
+  fi
 done
-if test x$SIGNAL_H = x"/dev/null"; then
+if test "x$SIGNAL_H" = x; then
   AC_MSG_ERROR(SIGNAL MACROS NOT FOUND:  please report to developers)
 fi
-zsh_cv_path_signal_h=$SIGNAL_H
+zsh_cv_path_signal_h="$SIGNAL_H"
 ])
-SIGNAL_H=$zsh_cv_path_signal_h
+SIGNAL_H="$zsh_cv_path_signal_h"
 AC_SUBST(SIGNAL_H)dnl
 
 dnl Where are error names located?  Needed as input for errnames1.awk

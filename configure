@@ -1454,7 +1454,7 @@ Optional Features:
   --enable-maildir-support
                           enable maildir support in MAIL and MAILPATH
   --enable-max-function-depth=MAX
-                          limit function depth to MAX, default 1000
+                          limit function depth to MAX, default 500
   --enable-readnullcmd=PAGER
                           pager used when READNULLCMD is not set
   --enable-pcre           enable the search for the pcre library (may create
@@ -2987,7 +2987,7 @@ fi
 # Check whether --enable-max-function-depth was given.
 if test "${enable_max_function_depth+set}" = set; then :
   enableval=$enable_max_function_depth; if test x$enableval = xyes; then
-  $as_echo "#define MAX_FUNCTION_DEPTH 1000" >>confdefs.h
+  $as_echo "#define MAX_FUNCTION_DEPTH 500" >>confdefs.h
 
 elif test x$enableval != xno; then
   cat >>confdefs.h <<_ACEOF
@@ -2996,7 +2996,7 @@ _ACEOF
 
 fi
 else
-  $as_echo "#define MAX_FUNCTION_DEPTH 1000" >>confdefs.h
+  $as_echo "#define MAX_FUNCTION_DEPTH 500" >>confdefs.h
 
 
 fi
@@ -8975,22 +8975,25 @@ if test -z "$sigfile_list"; then
 /usr/include/bits/signum.h
 /dev/null"
 fi
-for SIGNAL_H in $sigfile_list
+for SIGNAL_TRY_H in $sigfile_list
 do
-        nsigs=`test -f $SIGNAL_H && \
-  grep '#[ 	]*define[ 	][ 	]*SIG[0-9A-Z]*[ 	]*[0-9][0-9]*' $SIGNAL_H | \
+        nsigs=`test -f $SIGNAL_TRY_H && \
+  grep '#[ 	]*define[ 	][ 	]*SIG[0-9A-Z]*[ 	]*[0-9][0-9]*' $SIGNAL_TRY_H | \
   wc -l | sed 's/ 	//g'`
-  test "x$nsigs" != x && test "$nsigs" -ge 7 && break
+  if test "x$nsigs" != x && test "$nsigs" -ge 7
+  then
+    SIGNAL_H="$SIGNAL_H $SIGNAL_TRY_H"
+  fi
 done
-if test x$SIGNAL_H = x"/dev/null"; then
+if test "x$SIGNAL_H" = x; then
   as_fn_error $? "SIGNAL MACROS NOT FOUND:  please report to developers" "$LINENO" 5
 fi
-zsh_cv_path_signal_h=$SIGNAL_H
+zsh_cv_path_signal_h="$SIGNAL_H"
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $zsh_cv_path_signal_h" >&5
 $as_echo "$zsh_cv_path_signal_h" >&6; }
-SIGNAL_H=$zsh_cv_path_signal_h
+SIGNAL_H="$zsh_cv_path_signal_h"
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking where error names are located" >&5
 $as_echo_n "checking where error names are located... " >&6; }
